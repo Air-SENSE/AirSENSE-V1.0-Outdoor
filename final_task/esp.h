@@ -16,7 +16,7 @@
 #define PIN_LED D4
 #define PIN_CS_SD D8
 
-#define queue_size 1000
+#define queue_size 10
 #define debug false
 
 #define f_front_rear_size 3
@@ -29,12 +29,13 @@ const long utcOffsetInSeconds = 3600*7; // UTC +7
 const uint32_t timeLimit = 4294937296;  //time that allow sensor send data to server. 
 // Because millis() will overflow after 49.7 days 
 // If time2SendData gets time on less than 10 seconds after timer overflows, we have to wait 49.7 days more till millis() get over time2SendData in (1) expression 
-uint8_t bytes[19] = {
+const byte SLEEPCMD[19] = 
+{
   0xAA, // head
   0xB4, // command id
-  0x08, // data byte 1
-  0x01, // data byte 2 set
-  0x01, // data byte 3 work period 5 minutes: measure for 30 seconds + sleep the rest
+  0x06, // data byte 1
+  0x01, // data byte 2 (set mode)
+  0x00, // data byte 3 0 là (sleep) còn 1 là wake up
   0x00, // data byte 4
   0x00, // data byte 5
   0x00, // data byte 6
@@ -47,11 +48,33 @@ uint8_t bytes[19] = {
   0x00, // data byte 13
   0xFF, // data byte 14 (device id byte 1)
   0xFF, // data byte 15 (device id byte 2)
-  0x10, // checksum (low 8 bit of sum of data bytes) CHƯA TÍNH
-  0xAB  // tail
+  0x05, // checksum + thêm 1 nếu to work
+  0xAB,  // tail
+};const byte WAKEUPCMD[19] = 
+{
+  0xAA, // head
+  0xB4, // command id
+  0x06, // data byte 1
+  0x01, // data byte 2 (set mode)
+  0x01, // data byte 3 0 là (sleep) còn 1 là wake up
+  0x00, // data byte 4
+  0x00, // data byte 5
+  0x00, // data byte 6
+  0x00, // data byte 7
+  0x00, // data byte 8
+  0x00, // data byte 9
+  0x00, // data byte 10
+  0x00, // data byte 11
+  0x00, // data byte 12
+  0x00, // data byte 13
+  0xFF, // data byte 14 (device id byte 1)
+  0xFF, // data byte 15 (device id byte 2)
+  0x06, // checksum + thêm 1 nếu to work
+  0xAB,  // tail
 };
+
 //uint8_t data_buff[num_byte_data_from_arduino]={0};
-uint8_t sds_enable=0;
+uint8_t data_i=0;
 uint8_t ControlFlag;
 
 uint32_t lastPress = 0;
